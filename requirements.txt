@@ -1,0 +1,9 @@
+# Dépendances du projet INF1007 — Projet 2
+pandas
+scikit-learn
+joblib
+matplotlib
+pytest
+pytest-cov
+# Ajouter ici la bibliothèque d'interface si elle n'est pas dans la bibliothèque standard
+# (ex. : streamlit, PySide6) — Tkinter n'en a pas besoin.

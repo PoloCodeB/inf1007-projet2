@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+venv/
+historique_predictions.csv
+historique_predictions.json
