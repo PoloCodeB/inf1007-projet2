@@ -1,6 +1,15 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-venv/
+.venv/
 historique_predictions.csv
 historique_predictions.json
+
+# Dataset original (100 000 lignes) : gardé en local, seul l’échantillon est versionné
+donnees/dataset.csv
+.DS_Store
+.coverage
+
+# Local uniquement
+archives/
+.claude/

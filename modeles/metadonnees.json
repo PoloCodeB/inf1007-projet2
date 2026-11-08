@@ -1,0 +1,88 @@
+{
+    "colonnes": [
+        "age",
+        "gpa_semester_1",
+        "attendance_rate",
+        "tuition_up_to_date",
+        "scholarship_holder",
+        "part_time_job",
+        "study_mode"
+    ],
+    "variables": [
+        {
+            "type": "numerique",
+            "nom": "age",
+            "libelle": "Âge",
+            "minimum": 15.0,
+            "maximum": 30.0
+        },
+        {
+            "type": "numerique",
+            "nom": "gpa_semester_1",
+            "libelle": "Moyenne (GPA) du 1er semestre",
+            "minimum": 0.0,
+            "maximum": 4.0
+        },
+        {
+            "type": "numerique",
+            "nom": "attendance_rate",
+            "libelle": "Taux de présence en cours (%)",
+            "minimum": 0.0,
+            "maximum": 100.0
+        },
+        {
+            "type": "categorielle",
+            "nom": "tuition_up_to_date",
+            "libelle": "Frais de scolarité à jour",
+            "valeurs": [
+                "Non",
+                "Oui"
+            ]
+        },
+        {
+            "type": "categorielle",
+            "nom": "scholarship_holder",
+            "libelle": "Bénéficie d'une bourse",
+            "valeurs": [
+                "Non",
+                "Oui"
+            ]
+        },
+        {
+            "type": "categorielle",
+            "nom": "part_time_job",
+            "libelle": "Travail à temps partiel",
+            "valeurs": [
+                "Non",
+                "Oui"
+            ]
+        },
+        {
+            "type": "categorielle",
+            "nom": "study_mode",
+            "libelle": "Mode d'études",
+            "valeurs": [
+                "Full-time",
+                "Online",
+                "Part-time"
+            ]
+        }
+    ],
+    "resultats": {
+        "metrique": "F1 (classe abandon)",
+        "f1": 0.7075645756457565,
+        "exactitude": 0.7886666666666666,
+        "f1_reference": 0.0,
+        "exactitude_reference": 0.6793333333333333,
+        "matrice_confusion": [
+            [
+                3198,
+                878
+            ],
+            [
+                390,
+                1534
+            ]
+        ]
+    }
+}
