@@ -9,7 +9,7 @@
 
 ## Jeu de données
 - **Source :** [Student Academic Performance & Dropout Risk](https://www.kaggle.com/datasets/mohankrishnathalla/student-academic-performance-and-dropout-risk) (Kaggle).
-- **Licence :** <!-- À COMPLÉTER : licence indiquée sur la page Kaggle -->
+- **Licence :** [CC0: Public Domain](https://creativecommons.org/publicdomain/zero/1.0/)
 - **Fichier :** `donnees/etudiants.csv` (3,9 Mo).
 - **Échantillonnage :** le fichier original contient 100 000 lignes, alors que l'énoncé demande entre 500 et 50 000. On garde donc un échantillon aléatoire de **30 000 lignes** tiré avec une graine fixe (`random_state=42`). La proportion d'abandons est conservée (32 %). Pour le recréer, télécharger le CSV original dans `donnees/dataset.csv`, puis :
   ```python
