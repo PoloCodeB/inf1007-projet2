@@ -25,7 +25,7 @@ python -m venv .venv
 source .venv/bin/activate  # Windows : .venv\Scripts\activate
 pip install -r requirements.txt
 python src/modele.py   # entraîne et sauvegarde le modèle (déjà fait : modeles/ est fourni)
-python src/main.py     # lance l'interface Streamlit (équivalent à : streamlit run src/main.py)
+streamlit run src/main.py   # lance l'interface Streamlit
 ```
 L'interface s'ouvre dans le navigateur à l'adresse http://localhost:8501.
 
@@ -41,7 +41,7 @@ L'interface s'ouvre dans le navigateur à l'adresse http://localhost:8501.
 - `tests/` : tests pytest (logique, hors interface)
 
 ## Résultat du modèle
-- **Modèle :** arbre de décision (`max_depth=5`, `min_samples_leaf=200`, `class_weight="balanced"`), dans un `Pipeline` avec `OneHotEncoder` pour les variables catégorielles.
+- **Modèle :** arbre de décision (`max_depth=5`, `min_samples_leaf=200`, `class_weight="balanced"`). Les variables catégorielles sont transformées en colonnes 0/1 avec `pd.get_dummies` (la liste des colonnes obtenues est enregistrée dans `metadonnees.json` pour encoder les saisies de la même façon).
 - **Métrique choisie :** F1 de la classe « abandon ». Les classes sont déséquilibrées (68 % / 32 %) : l'exactitude seule récompenserait un modèle qui ne prédit jamais l'abandon.
 - **Score sur l'ensemble de test (6 000 étudiants) :** F1 = **0,708**, exactitude = 0,789.
 - **Référence (classe majoritaire, `DummyClassifier`) :** F1 = 0,000, exactitude = 0,679.
@@ -57,12 +57,12 @@ pytest
 pytest --cov=src
 ```
 - **27 tests** (`tests/test_donnees.py`, `tests/test_modele.py`) : cas usuels, cas limites (bornes exactes, aucun positif) et cas d'erreur (`pytest.raises`). Un test vérifie que le F1 calculé avec NumPy est égal à celui de scikit-learn (`pytest.approx`).
-- **Couverture obtenue :** `donnees.py` 97 %, `modele.py` 80 %, total 64 %. Le total est plus bas parce que `interface.py` et `main.py` ne sont pas testés (l'énoncé demande des tests hors interface).
+- **Couverture obtenue :** `donnees.py` 97 %, `modele.py` 82 %, total 66 %. Le total est plus bas parce que `interface.py` et `main.py` ne sont pas testés (l'énoncé demande des tests hors interface).
 
 ## Documentation consultée
 <!-- À VÉRIFIER : garder seulement les pages que vous avez réellement lues -->
-- pandas : [`pandas.read_csv`](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html), [`pandas.cut`](https://pandas.pydata.org/docs/reference/api/pandas.cut.html)
-- scikit-learn : [`DecisionTreeClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html), [`ColumnTransformer`](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html), [`DummyClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html)
+- pandas : [`pandas.read_csv`](https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html), [`pandas.cut`](https://pandas.pydata.org/docs/reference/api/pandas.cut.html), [`pandas.get_dummies`](https://pandas.pydata.org/docs/reference/api/pandas.get_dummies.html)
+- scikit-learn : [`DecisionTreeClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html), [`DummyClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html)
 - Streamlit : [`st.form`](https://docs.streamlit.io/develop/api-reference/execution-flow/st.form), [`st.pyplot`](https://docs.streamlit.io/develop/api-reference/charts/st.pyplot)
 
 ## Outil du chapitre 7 utilisé

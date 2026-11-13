@@ -1,14 +1,9 @@
 """Point d'entrée de l'application.
 
-`python src/main.py` relance automatiquement le fichier avec Streamlit
-(équivalent à `streamlit run src/main.py`).
+Lancer avec : streamlit run src/main.py
 """
 
-import sys
-
 import streamlit as st
-from streamlit import runtime
-from streamlit.web import cli
 
 from interface import Application
 from modele import Modele
@@ -32,8 +27,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if runtime.exists():
-        main()
-    else:
-        sys.argv = ["streamlit", "run", __file__, *sys.argv[1:]]
-        sys.exit(cli.main())
+    main()

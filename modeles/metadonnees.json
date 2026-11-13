@@ -8,6 +8,20 @@
         "part_time_job",
         "study_mode"
     ],
+    "colonnes_encodees": [
+        "age",
+        "gpa_semester_1",
+        "attendance_rate",
+        "tuition_up_to_date_Non",
+        "tuition_up_to_date_Oui",
+        "scholarship_holder_Non",
+        "scholarship_holder_Oui",
+        "part_time_job_Non",
+        "part_time_job_Oui",
+        "study_mode_Full-time",
+        "study_mode_Online",
+        "study_mode_Part-time"
+    ],
     "variables": [
         {
             "type": "numerique",
