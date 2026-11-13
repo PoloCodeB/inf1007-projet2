@@ -18,8 +18,8 @@ CHEMIN_DONNEES = os.path.join(DOSSIER_PROJET, "donnees", "etudiants.csv")
 CIBLE = "dropout"
 COLONNES_NUMERIQUES = ["age", "gpa_semester_1", "attendance_rate"]
 COLONNES_BINAIRES = ["tuition_up_to_date", "scholarship_holder", "part_time_job"]
-COLONNES_CATEGORIELLES = COLONNES_BINAIRES + ["study_mode"]
-COLONNES_ENTREE = COLONNES_NUMERIQUES + COLONNES_CATEGORIELLES
+COLONNES_CATEGORIELLES = ["study_mode"]
+COLONNES_ENTREE = COLONNES_NUMERIQUES + COLONNES_BINAIRES + COLONNES_CATEGORIELLES
 
 # Domaine possible de chaque variable numérique : une valeur en dehors est aberrante.
 DOMAINES = {"age": (15, 100), "gpa_semester_1": (0.0, 4.0), "attendance_rate": (0.0, 100.0)}
@@ -199,8 +199,7 @@ class JeuDeDonnees:
 
         Renvoie (x_entrainement, x_test, y_entrainement, y_test).
         """
-        return train_test_split(self.donnees[COLONNES_ENTREE], self.donnees[CIBLE],
-                                test_size=taille_test, random_state=graine, stratify=self.donnees[CIBLE])
+        return train_test_split(self.donnees[COLONNES_ENTREE], self.donnees[CIBLE], test_size=taille_test, random_state=graine, stratify=self.donnees[CIBLE])
 
     def construire_variables(self, x_entrainement: pd.DataFrame) -> list[Variable]:
         """Crée une Variable par colonne d'entrée, avec les bornes et valeurs vues à l'entraînement."""
@@ -209,7 +208,7 @@ class JeuDeDonnees:
             variables.append(VariableNumerique(colonne, LIBELLES[colonne],
                                                float(x_entrainement[colonne].min()),
                                                float(x_entrainement[colonne].max())))
-        for colonne in COLONNES_CATEGORIELLES:
+        for colonne in COLONNES_BINAIRES + COLONNES_CATEGORIELLES:
             valeurs = sorted(x_entrainement[colonne].unique().tolist())
             variables.append(VariableCategorielle(colonne, LIBELLES[colonne], valeurs))
         return variables
