@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import matplotlib
 
-matplotlib.use("Agg")  # Pas de fenêtre : on enregistre le graphique dans un fichier.
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -17,26 +17,22 @@ CHEMIN_DONNEES = os.path.join(DOSSIER_PROJET, "donnees", "etudiants.csv")
 
 CIBLE = "dropout"
 COLONNES_NUMERIQUES = ["age", "gpa_semester_1", "attendance_rate"]
-COLONNES_BINAIRES = ["tuition_up_to_date", "scholarship_holder", "part_time_job"]
-COLONNES_CATEGORIELLES = ["study_mode"]
-COLONNES_ENTREE = COLONNES_NUMERIQUES + COLONNES_BINAIRES + COLONNES_CATEGORIELLES
+COLONNES_CATEGORIELLES = ["tuition_up_to_date", "study_mode"]
+COLONNES_ENTREE = COLONNES_NUMERIQUES + COLONNES_CATEGORIELLES
 
-# Domaine possible de chaque variable numérique : une valeur en dehors est aberrante.
 DOMAINES = {"age": (15, 100), "gpa_semester_1": (0.0, 4.0), "attendance_rate": (0.0, 100.0)}
 
 LIBELLES = {
     "age": "Âge",
     "gpa_semester_1": "Moyenne (GPA) du 1er semestre",
-    "attendance_rate": "Taux de présence en cours (%)",
+    "attendance_rate": "Taux de présence (%)",
     "tuition_up_to_date": "Frais de scolarité à jour",
-    "scholarship_holder": "Bénéficie d'une bourse",
-    "part_time_job": "Travail à temps partiel",
     "study_mode": "Mode d'études",
 }
 
 
 class Variable(ABC):
-    """Classe parente abstraite d'une variable d'entrée du modèle."""
+    """Classe parente abstraite d'une variable d'entrée."""
 
     def __init__(self, nom: str, libelle: str) -> None:
         self._nom = nom
@@ -44,24 +40,19 @@ class Variable(ABC):
 
     @property
     def nom(self) -> str:
-        """Nom de la colonne dans le jeu de données."""
         return self._nom
 
     @property
     def libelle(self) -> str:
-        """Texte affiché à l'utilisateur."""
         return self._libelle
 
     @abstractmethod
-    def valider(self, valeur):
-        """Valide une saisie et la renvoie convertie.
-
-        Lève DonneeInvalideError si la saisie n'est pas acceptable.
-        """
+    def valider(self, valeur: object) -> object:
+        """Valide et convertit la saisie. Reçoit : valeur brute. Renvoie : valeur convertie. Lève : DonneeInvalideError."""
 
     @abstractmethod
     def vers_dict(self) -> dict:
-        """Renvoie la description de la variable pour le fichier JSON de métadonnées."""
+        """Exporte la description pour les métadonnées JSON. Reçoit : rien. Renvoie : dict."""
 
     def __str__(self) -> str:
         return f"{self._libelle} ({self._nom})"
@@ -72,8 +63,8 @@ class VariableNumerique(Variable):
 
     def __init__(self, nom: str, libelle: str, minimum: float, maximum: float) -> None:
         super().__init__(nom, libelle)
-        self._minimum = minimum
-        self._maximum = maximum
+        self._minimum = float(minimum)
+        self._maximum = float(maximum)
 
     @property
     def minimum(self) -> float:
@@ -83,22 +74,16 @@ class VariableNumerique(Variable):
     def maximum(self) -> float:
         return self._maximum
 
-    def valider(self, valeur: str | float) -> float:
-        """Convertit la saisie en float et vérifie qu'elle est dans l'intervalle.
-
-        Reçoit un texte (saisie de l'interface) ou un nombre.
-        Lève DonneeInvalideError si la saisie est vide, non numérique ou hors intervalle.
-        """
+    def valider(self, valeur: object) -> float:
+        """Valide un nombre dans [minimum, maximum]. Reçoit : str ou nombre. Renvoie : float. Lève : DonneeInvalideError."""
         if valeur is None or str(valeur).strip() == "":
-            raise DonneeInvalideError(f"« {self._libelle} » est vide.")
+            raise DonneeInvalideError(f"« {self._libelle} » est obligatoire.")
         try:
             nombre = float(str(valeur).replace(",", "."))
         except ValueError:
-            raise DonneeInvalideError(f"« {self._libelle} » doit être un nombre (reçu : {valeur}).")
-        if not self._minimum <= nombre <= self._maximum:
-            raise DonneeInvalideError(
-                f"« {self._libelle} » doit être entre {self._minimum} et {self._maximum} (reçu : {nombre})."
-            )
+            raise DonneeInvalideError(f"« {self._libelle} » doit être un nombre valide.")
+        if not (self._minimum <= nombre <= self._maximum):
+            raise DonneeInvalideError(f"« {self._libelle} » doit être entre {self._minimum} et {self._maximum}.")
         return nombre
 
     def vers_dict(self) -> dict:
@@ -107,7 +92,7 @@ class VariableNumerique(Variable):
 
 
 class VariableCategorielle(Variable):
-    """Variable qui prend une valeur parmi une liste fixe."""
+    """Variable catégorielle restreinte à des modalités définies."""
 
     def __init__(self, nom: str, libelle: str, valeurs: list[str]) -> None:
         super().__init__(nom, libelle)
@@ -117,39 +102,32 @@ class VariableCategorielle(Variable):
     def valeurs(self) -> list[str]:
         return list(self._valeurs)
 
-    def valider(self, valeur: str) -> str:
-        """Vérifie que la saisie fait partie des valeurs possibles et la renvoie.
-
-        Lève DonneeInvalideError si la saisie est vide ou inconnue.
-        """
-        if valeur is None or str(valeur).strip() == "":
-            raise DonneeInvalideError(f"« {self._libelle} » est vide.")
-        if valeur not in self._valeurs:
-            raise DonneeInvalideError(
-                f"« {self._libelle} » doit être l'une de ces valeurs : {', '.join(self._valeurs)}."
-            )
-        return valeur
+    def valider(self, valeur: object) -> str:
+        """Valide une modalité autorisée. Reçoit : texte saisi. Renvoie : str nettoyée. Lève : DonneeInvalideError."""
+        texte = "" if valeur is None else str(valeur).strip()
+        if not texte:
+            raise DonneeInvalideError(f"« {self._libelle} » est obligatoire.")
+        if texte not in self._valeurs:
+            raise DonneeInvalideError(f"« {self._libelle} » doit être parmi : {', '.join(self._valeurs)}.")
+        return texte
 
     def vers_dict(self) -> dict:
-        return {"type": "categorielle", "nom": self._nom, "libelle": self._libelle,
-                "valeurs": self._valeurs}
+        return {"type": "categorielle", "nom": self._nom, "libelle": self._libelle, "valeurs": self._valeurs}
 
 
 def variable_depuis_dict(description: dict) -> Variable:
-    """Recrée une Variable à partir de sa description JSON (voir vers_dict).
-
-    Lève DonneeInvalideError si le type est inconnu.
-    """
-    if description["type"] == "numerique":
+    """Reconstitue une Variable depuis un dict. Reçoit : description (dict). Renvoie : Variable. Lève : DonneeInvalideError."""
+    genre = description.get("type")
+    if genre == "numerique":
         return VariableNumerique(description["nom"], description["libelle"],
                                  description["minimum"], description["maximum"])
-    if description["type"] == "categorielle":
+    if genre == "categorielle":
         return VariableCategorielle(description["nom"], description["libelle"], description["valeurs"])
-    raise DonneeInvalideError(f"Type de variable inconnu : {description['type']}")
+    raise DonneeInvalideError(f"Type de variable inconnu : {genre}")
 
 
 class JeuDeDonnees:
-    """Charge, nettoie et sépare le jeu de données des étudiants."""
+    """Charge, nettoie et sépare le jeu de données pour l'apprentissage."""
 
     def __init__(self, chemin: str = CHEMIN_DONNEES) -> None:
         self._chemin = chemin
@@ -157,17 +135,12 @@ class JeuDeDonnees:
 
     @property
     def donnees(self) -> pd.DataFrame:
-        """DataFrame chargé. Lève DonneeInvalideError s'il n'a pas encore été chargé."""
         if self._donnees is None:
             raise DonneeInvalideError("Les données n'ont pas encore été chargées.")
         return self._donnees
 
     def charger(self) -> pd.DataFrame:
-        """Lit le CSV en ne gardant que les colonnes utiles.
-
-        Lève FileNotFoundError si le fichier n'existe pas,
-        DonneeInvalideError s'il manque une colonne attendue.
-        """
+        """Lit le CSV et retient les colonnes utiles. Reçoit : rien. Renvoie : DataFrame. Lève : FileNotFoundError, DonneeInvalideError."""
         if not os.path.exists(self._chemin):
             raise FileNotFoundError(f"Fichier de données introuvable : {self._chemin}")
         with open(self._chemin, encoding="utf-8") as fichier:
@@ -175,51 +148,44 @@ class JeuDeDonnees:
         manquantes = set(COLONNES_ENTREE + [CIBLE]) - set(donnees.columns)
         if manquantes:
             raise DonneeInvalideError(f"Colonnes manquantes dans le CSV : {sorted(manquantes)}")
-        self._donnees = donnees[COLONNES_ENTREE + [CIBLE]]
+        self._donnees = donnees[COLONNES_ENTREE + [CIBLE]].copy()
         return self._donnees
 
     def nettoyer(self) -> int:
-        """Retire les lignes incomplètes ou aberrantes et rend les binaires lisibles (Oui/Non).
-
-        Renvoie le nombre de lignes retirées.
-        """
+        """Filtre les lignes incomplètes ou aberrantes. Reçoit : rien. Renvoie : nb lignes retirées (int)."""
         donnees = self.donnees.dropna()
-        for colonne, (minimum, maximum) in DOMAINES.items():
-            donnees = donnees[donnees[colonne].between(minimum, maximum)]
+        for col, (mini, maxi) in DOMAINES.items():
+            donnees = donnees[donnees[col].between(mini, maxi)]
         donnees = donnees[donnees[CIBLE].isin([0, 1])].copy()
-        for colonne in COLONNES_BINAIRES:
-            donnees[colonne] = donnees[colonne].map({1: "Oui", 0: "Non"})
-        donnees = donnees.dropna()  # Binaires différents de 0/1.
+        donnees["tuition_up_to_date"] = donnees["tuition_up_to_date"].map({1: "Oui", 0: "Non"})
+        donnees = donnees.dropna()
         retirees = len(self.donnees) - len(donnees)
         self._donnees = donnees
         return retirees
 
     def separer(self, taille_test: float = 0.2, graine: int = 42) -> tuple:
-        """Sépare en ensembles d'entraînement et de test, en gardant la proportion de la cible.
-
-        Renvoie (x_entrainement, x_test, y_entrainement, y_test).
-        """
-        return train_test_split(self.donnees[COLONNES_ENTREE], self.donnees[CIBLE], test_size=taille_test, random_state=graine, stratify=self.donnees[CIBLE])
+        """Sépare en train/test stratifié. Reçoit : taille_test (float), graine (int). Renvoie : (X_tr, X_te, y_tr, y_te)."""
+        return train_test_split(self.donnees[COLONNES_ENTREE], self.donnees[CIBLE],
+                                test_size=taille_test, random_state=graine, stratify=self.donnees[CIBLE])
 
     def construire_variables(self, x_entrainement: pd.DataFrame) -> list[Variable]:
-        """Crée une Variable par colonne d'entrée, avec les bornes et valeurs vues à l'entraînement."""
+        """Crée les variables d'après les données d'entraînement. Reçoit : x_entrainement. Renvoie : list[Variable]."""
         variables: list[Variable] = []
-        for colonne in COLONNES_NUMERIQUES:
-            variables.append(VariableNumerique(colonne, LIBELLES[colonne],
-                                               float(x_entrainement[colonne].min()),
-                                               float(x_entrainement[colonne].max())))
-        for colonne in COLONNES_BINAIRES + COLONNES_CATEGORIELLES:
-            valeurs = sorted(x_entrainement[colonne].unique().tolist())
-            variables.append(VariableCategorielle(colonne, LIBELLES[colonne], valeurs))
+        for col in COLONNES_NUMERIQUES:
+            variables.append(VariableNumerique(col, LIBELLES[col],
+                                               float(x_entrainement[col].min()), float(x_entrainement[col].max())))
+        for col in COLONNES_CATEGORIELLES:
+            valeurs = sorted(x_entrainement[col].unique().tolist())
+            variables.append(VariableCategorielle(col, LIBELLES[col], valeurs))
         return variables
 
     def graphique_exploration(self, chemin: str) -> str:
-        """Enregistre le taux d'abandon selon la tranche de GPA et renvoie le chemin du fichier."""
+        """Enregistre le graphique du taux d'abandon par GPA. Reçoit : chemin (str). Renvoie : chemin (str)."""
         tranches = pd.cut(self.donnees["gpa_semester_1"], bins=[0, 1, 2, 2.5, 3, 3.5, 4], include_lowest=True,
                           labels=["0–1", "1–2", "2–2,5", "2,5–3", "3–3,5", "3,5–4"])
         taux = self.donnees.groupby(tranches, observed=True)[CIBLE].mean() * 100
 
-        fig, axe = plt.subplots(figsize=(8, 5))
+        fig, axe = plt.subplots(figsize=(7, 4))
         axe.bar(taux.index.astype(str), taux.values, color="steelblue", label="Taux d'abandon")
         axe.axhline(self.donnees[CIBLE].mean() * 100, color="red", linestyle="--", label="Moyenne globale")
         axe.set_title("Taux d'abandon selon la moyenne (GPA) du 1er semestre")

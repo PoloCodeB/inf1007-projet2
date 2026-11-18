@@ -4,8 +4,6 @@
         "gpa_semester_1",
         "attendance_rate",
         "tuition_up_to_date",
-        "scholarship_holder",
-        "part_time_job",
         "study_mode"
     ],
     "colonnes_encodees": [
@@ -14,10 +12,6 @@
         "attendance_rate",
         "tuition_up_to_date_Non",
         "tuition_up_to_date_Oui",
-        "scholarship_holder_Non",
-        "scholarship_holder_Oui",
-        "part_time_job_Non",
-        "part_time_job_Oui",
         "study_mode_Full-time",
         "study_mode_Online",
         "study_mode_Part-time"
@@ -40,7 +34,7 @@
         {
             "type": "numerique",
             "nom": "attendance_rate",
-            "libelle": "Taux de présence en cours (%)",
+            "libelle": "Taux de présence (%)",
             "minimum": 0.0,
             "maximum": 100.0
         },
@@ -48,24 +42,6 @@
             "type": "categorielle",
             "nom": "tuition_up_to_date",
             "libelle": "Frais de scolarité à jour",
-            "valeurs": [
-                "Non",
-                "Oui"
-            ]
-        },
-        {
-            "type": "categorielle",
-            "nom": "scholarship_holder",
-            "libelle": "Bénéficie d'une bourse",
-            "valeurs": [
-                "Non",
-                "Oui"
-            ]
-        },
-        {
-            "type": "categorielle",
-            "nom": "part_time_job",
-            "libelle": "Travail à temps partiel",
             "valeurs": [
                 "Non",
                 "Oui"
@@ -84,18 +60,18 @@
     ],
     "resultats": {
         "metrique": "F1 (classe abandon)",
-        "f1": 0.7075645756457565,
-        "exactitude": 0.7886666666666666,
+        "f1": 0.6975294903182728,
+        "exactitude": 0.7735,
         "f1_reference": 0.0,
         "exactitude_reference": 0.6793333333333333,
         "matrice_confusion": [
             [
-                3198,
-                878
+                3074,
+                1002
             ],
             [
-                390,
-                1534
+                357,
+                1567
             ]
         ]
     }
