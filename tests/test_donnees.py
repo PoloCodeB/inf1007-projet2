@@ -15,12 +15,14 @@ from exceptions import DonneeInvalideError
 
 
 def creer_csv(dossier, nb_lignes: int = 20) -> str:
-    """Génère un CSV minimal valide et renvoie son chemin."""
+    """Écrit un petit CSV valide (moitié abandon, moitié non) et renvoie son chemin."""
     donnees = pd.DataFrame({
         "age": [18 + i % 10 for i in range(nb_lignes)],
         "gpa_semester_1": [round(i % 5 * 0.8, 1) for i in range(nb_lignes)],
         "attendance_rate": [50.0 + i for i in range(nb_lignes)],
         "tuition_up_to_date": [i % 2 for i in range(nb_lignes)],
+        "scholarship_holder": [1] * nb_lignes,
+        "part_time_job": [0] * nb_lignes,
         "study_mode": ["Full-time", "Online"] * (nb_lignes // 2),
         "dropout": [0, 1] * (nb_lignes // 2),
     })
@@ -84,8 +86,8 @@ def test_charger_colonne_manquante(tmp_path):
 def test_nettoyer_retire_aberrants_et_convertit_binaires(tmp_path):
     jeu = JeuDeDonnees(creer_csv(tmp_path))
     jeu.charger()
-    jeu.donnees.loc[0, "gpa_semester_1"] = 9.0
-    jeu.donnees.loc[1, "attendance_rate"] = None
+    jeu.donnees.loc[0, "gpa_semester_1"] = 9.0   # GPA impossible
+    jeu.donnees.loc[1, "attendance_rate"] = None  # valeur manquante
     assert jeu.nettoyer() == 2
     assert set(jeu.donnees["tuition_up_to_date"]) == {"Oui", "Non"}
 

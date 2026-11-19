@@ -1,6 +1,6 @@
-"""Point d'entrée de l'application Streamlit.
+"""Point d'entrée de l'application.
 
-Lancement : streamlit run src/main.py
+Lancer avec : streamlit run src/main.py
 """
 
 import streamlit as st
@@ -11,22 +11,12 @@ from modele import Modele
 
 @st.cache_resource
 def charger_modele() -> Modele:
-    """Charge le modèle sérialisé pour la session Streamlit.
-
-    Reçoit : rien.
-    Renvoie : instance prête de Modele.
-    Lève : FileNotFoundError si les fichiers de sauvegarde sont introuvables.
-    """
+    """Charge le modèle sauvegardé une seule fois pour toute la session Streamlit."""
     return Modele.charger()
 
 
 def main() -> None:
-    """Point d'entrée principal initialisant la page et l'application.
-
-    Reçoit : rien.
-    Renvoie : None.
-    Lève : rien.
-    """
+    """Charge le modèle et affiche l'interface (message clair si le modèle est absent)."""
     st.set_page_config(page_title="Risque d'abandon", page_icon="🎓")
     try:
         modele = charger_modele()
